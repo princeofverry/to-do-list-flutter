@@ -15,7 +15,7 @@ class Todos extends Table {
 }
 
 @DriftDatabase(tables: [Todos])
-class MyDatabase extends _$Mydatabase {
+class MyDatabase extends _$MyDatabase {
   MyDatabase() : super(_openConnection());
 
   @override

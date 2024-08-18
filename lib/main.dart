@@ -39,7 +39,21 @@ class _MyHomePageState extends State<MyHomePage> {
     return database.select(database.todos).get();
   }
 
-  void todoDialog() {
+  Future update(Todo todo, String newTitle, String newDetail) async {
+    await database
+        .update(database.todos)
+        .replace(Todo(id: todo.id, title: newTitle, detail: newDetail));
+  }
+
+  Future delete(Todo todo) async {
+    await database.delete(database.todos).delete(todo);
+  }
+
+  void todoDialog(Todo? todo) {
+    if (todo != null) {
+      titleTEC.text = todo.title;
+      detailTEC.text = todo.detail;
+    }
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -48,7 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Center(
                   child: Column(
                 children: [
-                  Text('Tambah Transaksi'),
+                  Text((todo != null ? "Detail " : "Tambah ") + "Todo"),
                   SizedBox(
                     height: 20,
                   ),
@@ -83,7 +97,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     SizedBox(width: 10),
                     ElevatedButton(
                         onPressed: () {
-                          insert(titleTEC.text, detailTEC.text);
+                          if (todo != null) {
+                            update(todo, titleTEC.text, detailTEC.text);
+                          } else {
+                            insert(titleTEC.text, detailTEC.text);
+                          }
                           setState(() {});
                           // back to route
                           Navigator.of(context, rootNavigator: true)
@@ -91,7 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           titleTEC.clear();
                           detailTEC.clear();
                         },
-                        child: Text('Simpan'))
+                        child: Text(todo != null ? 'update ' : 'simpan '))
                   ])
                 ],
               )),
@@ -121,13 +139,16 @@ class _MyHomePageState extends State<MyHomePage> {
                               // ambil data dari yang sudah ada!
                               child: ListTile(
                                 onTap: () {
-                                  todoDialog();
+                                  todoDialog(snapshot.data![index]);
                                 },
                                 title: Text(snapshot.data![index].title),
                                 subtitle: Text(snapshot.data![index].detail),
                                 trailing: ElevatedButton(
                                     child: Icon(Icons.delete),
-                                    onPressed: () {}),
+                                    onPressed: () {
+                                      delete(snapshot.data![index]);
+                                      setState(() {});
+                                    }),
                               ),
                             );
                           });
@@ -138,7 +159,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 })),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            todoDialog();
+            // saat ditambahkan jadi clear gitu isinya!
+            titleTEC.clear();
+            detailTEC.clear();
+            todoDialog(null);
           },
           child: Icon(Icons.add),
         ));
